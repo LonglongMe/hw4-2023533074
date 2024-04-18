@@ -22,16 +22,15 @@ typedef struct {
 // Remark: Each enum item corresponds to an integer, starting from 0.
 typedef enum { Up, Left, Idle, Right, Down } Direction;
 
-Direction oppositeDirection(Direction dir) { return (Direction)(4 - dir); }
+Direction oppositeDirection(Direction dir) { return (Direction)(4 - dir); }//如果碰壁，往回退一格并修改方向
 
-Coord moveOneStep(Coord from, Direction dir) {
-  // Understand the trick here.
+Coord moveOneStep(Coord from, Direction dir) {//将方向与坐标数值变化一一对应
   static const int rowDelta[] = {-1, 0, 0, 0, 1};
   static const int colDelta[] = {0, -1, 0, 1, 0};
   return (Coord){from.row + rowDelta[dir], from.col + colDelta[dir]};
 }
 
-typedef struct {
+typedef struct {//ghost的参数，与ghost绑定，储存并接受外部函数的修改
   Coord pos;
   Direction direction;
   char itemBelow;
@@ -39,7 +38,7 @@ typedef struct {
 
 typedef enum { GS_Preparing, GS_Running, GS_Win, GS_Lose } GameStatus;
 
-typedef struct {
+typedef struct {//游戏运行所需要的全部数据，游戏状态，游戏地图，玩家和怪物参数
   GameStatus status;
   int level;
   int score;
@@ -55,7 +54,7 @@ typedef struct {
 
   char **grid;
 } Game;
-
+//获取地图信息
 bool isWall(char c) { return c == 'B' || c == 'Y' || c == 'R' || c == 'G'; }
 
 bool isFood(char c) { return c == '.'; }
@@ -72,7 +71,46 @@ bool isGhost(char c) { return c == '@'; }
  * @param mapFileName Path to the map file.
  * @return Game The created Game object.
  */
-Game createGame(int level, const char *mapFileName) {
+Game createGame(int level, const char *mapFileName) {//初始化游戏，根据抓取的txt数据，创建一个游戏对象
+     
+    char line[256],**grid;
+    int column,row,ghost,index=0,food=0;
+    //开始阅读文件
+    FILE *file; 
+    file = fopen(mapFileName, "r");  
+    fgets(line,sizeof(line),file);
+    sscanf(line, "%d %d %d", &row, &column, &ghost);
+    grid = (char **)malloc(row * sizeof(char *));  
+    for (int i = 0; i < row; ++i) {fgets(line, sizeof(line), file) ;grid[i] = strdup(line);}
+    
+    Game game;
+    while (fgets(line, sizeof(line), file) != NULL){//读取和分配初始方向
+        if (line[0]=='u') game.ghosts[index++].direction=Up;
+        else if (line[0]=='l') game.ghosts[index++].direction=Left;
+        else if (line[0]=='r') game.ghosts[index++].direction=Right;
+        else if (line[0]=='d') game.ghosts[index++].direction=Down;
+    }
+    fclose(file);//关闭文件
+    //计算和分配foodcnt和坐标
+    for(int i=0;i<row;++i){for(int j=0;j<column;j++){
+      if(grid[i][j]=='.')food++;
+      else if(grid[i][j]=='C'){game.pacmanPos.row=i;game.pacmanPos.col=j;}
+      else if(grid[i][i]>='0'&&grid[i][j]<='9'){game.ghosts[grid[i][j]-'0'].pos.row=i;
+      game.ghosts[grid[i][j]-'0'].pos.col=j;grid[i][j]='@';}
+      }}
+
+
+    game.level=level;
+    game.grid=grid;
+    game.numCols=column;
+    game.numRows=row;
+    game.score=0;
+    game.status=GS_Preparing;
+    game.ghostCnt=ghost;
+    game.foodsCnt=food;
+    return game;
+    
+
   // TODO: Implement this function.
   // Create a Game object. The information needed should be obtained from the
   // file 'mapFileName'. Every member of the Game object should be correctly
@@ -84,6 +122,8 @@ Game createGame(int level, const char *mapFileName) {
   //   - 'grid' should be a dynamically allocated "2d-array". The function
   //   'printInitialGame' below serves as a hint on the contents of 'grid'.
   // Do not forget to close the file you opened.
+  
+
 }
 
 /**
@@ -245,6 +285,6 @@ void runLevel(int level) {
 int main(void) {
   prepare_game();
   // TODO: Run more levels?
-  runLevel(3);
+  runLevel(0);
   return 0;
 }
