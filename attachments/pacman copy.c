@@ -69,7 +69,14 @@ bool isLegal(int x,int y,int row,int col, unsigned char* p)
 	return false;
 }
 
-
+/**
+ * @brief Create a Game object. Level information including the map is read from
+ * the file @c mapFileName. Return the Game object created.
+ *
+ * @param level Level ID.
+ * @param mapFileName Path to the map file.
+ * @return Game The created Game object.
+ */
 Game createGame(int level, const char *mapFileName) {//初始化游戏，根据抓取的txt数据，创建一个游戏对象
      
     char line[256],**grid;char* maze;
@@ -95,7 +102,7 @@ Game createGame(int level, const char *mapFileName) {//初始化游戏，根据�
       if(grid[i][j]=='.'){food++;maze[i*column+j]=' ';}
       else if(grid[i][j]=='C'){game.pacmanPos.row=i;game.pacmanPos.col=j;maze[i*column+j]=' ';}
       else if(grid[i][j]>='0' && grid[i][j]<='9'){game.ghosts[grid[i][j]-'0'].pos.row=i;
-      game.ghosts[grid[i][j]-'0'].pos.col=j;grid[i][j]='@';maze[i*column+j]=' ';}
+      game.ghosts[grid[i][j]-'0'].pos.col=j;grid[i][j]=' ';maze[i*column+j]=' ';}
       
       else {maze[i*column+j]='0';}}}
     for(int i=0;i<ghost;i++){game.ghosts[i].itemBelow=' ';}
@@ -112,10 +119,26 @@ Game createGame(int level, const char *mapFileName) {//初始化游戏，根据�
     return game;
     
 
+  // TODO: Implement this function.
+  // Create a Game object. The information needed should be obtained from the
+  // file 'mapFileName'. Every member of the Game object should be correctly
+  // set, some of which you need to pay special attention to:
+  //   - 'status' should be set to GS_Preparing.
+  //   - 'score' should be set to zero.
+  //   - 'itemBelow' of each ghost should also be correctly set. This influences
+  //   the way you move ghosts. Think about it carefully.
+  //   - 'grid' should be a dynamically allocated "2d-array". The function
+  //   'printInitialGame' below serves as a hint on the contents of 'grid'.
+  // Do not forget to close the file you opened.
+  
 
 }
 
-
+/**
+ * @brief Destroy a Game object. Resources are released.
+ *
+ * @param pGame
+ */
 void destroyGame(Game *pGame) {
   for (int i = pGame->numRows - 1; i >= 0; --i)
     free(pGame->grid[i]);
@@ -127,7 +150,7 @@ void printInitialGame(const Game *pGame) {
   // Called at the beginning of 'runGame'.
   // Your 'createGame' should set the contents of 'grid' correctly to make this
   // function work.
-  clear_screen();
+  //clear_screen();
   for (int i = 0; i != pGame->numRows; ++i) {
     for (int j = 0; j != pGame->numCols; ++j) {
       switch (pGame->grid[i][j]) {
@@ -162,6 +185,112 @@ void printFoodUpdate(const Game *pGame) {
   printf("%d          ", pGame->foodsCnt);
 }
 
+/**
+ * @brief Move all the ghosts by one step. Their @c pos should be updated, and
+ * the contents in @c pGame->grid and things printed on the screen should also
+ * be updated.
+ *
+ * @param pGame Pointer to the current Game object.
+ */
+/*
+void redirection(Game *pGame,const int i,int* col,int*row,int*colable,int*rowable){//获取ghost和pacman的相对位置
+    Ghost *gho=&pGame->ghosts[i];
+    if (gho->pos.col>pGame->pacmanPos.col)*col= -1;
+    else if (gho->pos.col==pGame->pacmanPos.col)*col= 0;
+    else if (gho->pos.col<pGame->pacmanPos.col)*col= 1;
+
+    if (gho->pos.row>pGame->pacmanPos.row)*row= -1;
+    else if (gho->pos.row==pGame->pacmanPos.row)*row=0;
+    else if (gho->pos.row<pGame->pacmanPos.row)*row=1;
+
+    if (isWall(pGame->grid[gho->pos.row][gho->pos.col+*col]))*colable=0;
+    if (isPacman(pGame->grid[gho->pos.row][gho->pos.col+*col]))pGame->status=GS_Lose;
+    if (isWall(pGame->grid[gho->pos.row+*row][gho->pos.col]))*rowable=0;
+    if (isPacman(pGame->grid[gho->pos.row+*row][gho->pos.col]))pGame->status=GS_Lose;
+  }*/
+  /*
+void redirection(Game *pGame,int i){
+  int srow=pGame->ghosts[i].pos.row;int scol=pGame->ghosts[i].pos.col;
+  int erow=pGame->pacmanPos.row;int ecol=pGame->pacmanPos.col;
+  if (srow<erow){int temp=srow;srow=erow;erow=temp;temp=scol;scol=ecol;ecol=temp;}
+  int *lines[50][50];
+  for(int i=0;i<srow-erow;i++){
+    for(int j=0;j<pGame->numCols;j++){
+      int tem;
+      if(!isWall(pGame->grid[i+srow][j])){lines[i][tem++]=j;}
+    }
+  }//////if (gho->pos.col>pGame->pacmanPos.col)newpos=moveOneStep(gho->pos,(Direction)(1));
+    else if (gho->pos.col<pGame->pacmanPos.col)newpos=moveOneStep(gho->pos,(Direction)(3));
+
+    if (isWall(pGame->grid[newpos.row][newpos.col])||gho->pos.col==pGame->pacmanPos.col){
+
+      if (gho->pos.row>pGame->pacmanPos.row)newpos=moveOneStep(gho->pos,(Direction)(0));
+      else if (gho->pos.row<pGame->pacmanPos.row)newpos=moveOneStep(gho->pos,(Direction)(4));
+
+      if (isWall(pGame->grid[newpos.row][newpos.col])){;}
+      else {gho->pos=newpos;}
+    }
+    else {gho->pos=newpos;}//////
+}*/
+
+/*
+bool walkMaze(int numrows,int numcols, unsigned char* maze,int row,int col, Ans *ans )
+
+{
+	int pos =row * numcols + col;	//当前位置
+	if (maze[pos] == end)return true;
+	if (isLegal(row - 1, col, numrows, numcols,maze))	//
+	
+    {maze[pos] = visited;
+		if (walkMaze(numrows, numcols, maze, row - 1, col, ans))	//该路径可行,输出操作符
+		{
+			ans->len++;
+      ans->anslist[ans->len]==0;
+			maze[pos] = successPath;			//用于显示该路径
+			return true;
+		}
+	}
+	if (isLegal(row, col + 1, numrows, numcols, maze))	//右
+	{
+
+		maze[pos] = visited;
+		if (walkMaze(numrows, numcols, maze, row ,col+1,ans))
+		{
+			ans->len++;
+      ans->anslist[ans->len]==3;
+			maze[pos] = successPath;
+			return  true;
+		}
+	}
+	if (isLegal(row + 1, col, numrows, numcols, maze))	//下
+	{
+		//printMaze(p,row,col);
+		maze[pos] = visited;
+		if (walkMaze(numrows, numcols, maze, row +1, col,ans))
+		{
+			ans->len++;
+      ans->anslist[ans->len]==4;
+			maze[row * numcols + col] = successPath;
+			return true;
+		}
+	}
+	if (isLegal(row, col - 1, numrows, numcols, maze))	//左
+	{
+		//printMaze(p,row,col);
+		maze[pos] = visited;
+		if (walkMaze(numrows, numcols, maze, row , col-1,ans))
+		{
+			ans->len++;
+      ans->anslist[ans->len]==1;
+			maze[pos] = successPath;
+			return  true;
+		}
+	}
+	maze[pos] = visited;
+	return false;	//无路可走,该条路径不行
+}
+ */
+
 bool walkMaze(int numrows,int numcols, unsigned char* maze,int row,int col, int* ans )
 
 {
@@ -186,54 +315,51 @@ bool walkMaze(int numrows,int numcols, unsigned char* maze,int row,int col, int*
 	return false;	
 }
  
+/*
+bool walkMaze(int numrows,int numcols, unsigned char* maze,int row,int col, int* ans )
+
+{*ans=1;return true;}*/
+
+
+
 void moveGhosts(Game *pGame) {
-  for(int i =0;i<pGame->ghostCnt;i++){//renew all
-      pGame->grid[pGame->ghosts[i].pos.row][pGame->ghosts[i].pos.col]=pGame->ghosts[i].itemBelow;
-      move_cursor(pGame->ghosts[i].pos.row,pGame->ghosts[i].pos.col);
-      putchar(pGame->ghosts[i].itemBelow);
-    }
-
+  // TODO: Implement this function.
+  // Move all the ghosts by one step. You are encouraged to move ghosts in a
+  // smarter way.
+  // Note that ghosts may overlap, and they may also overlap with foods. Hints
+  // on this:
+  //  - The 'itemBelow' member of Ghost may be of great help.
+  //  - A possible way to handle overlapping objects correctly is to first
+  //  remove all the ghosts in reverse order, and then put the ghosts on their
+  //  new positions in order.
   for(int i =0;i<pGame->ghostCnt;i++){
-    Ghost *gho=&pGame->ghosts[i];
-    Coord targetpos=pGame->pacmanPos;
     Coord newpos;
-    //move ghosts
-    if (gho->pos.col>targetpos.col)newpos=moveOneStep(gho->pos,(Direction)(1));
-    else if (gho->pos.col<targetpos.col)newpos=moveOneStep(gho->pos,(Direction)(3));//异列变列
-    else if(gho->pos.col==targetpos.col){//同列变行
-      if (gho->pos.row>targetpos.row)newpos=moveOneStep(gho->pos,(Direction)(0));
-      else if (gho->pos.row<targetpos.row)newpos=moveOneStep(gho->pos,(Direction)(4));
+    move_cursor(pGame->ghosts[i].pos.row,pGame->ghosts[i].pos.col);
+    putchar(pGame->ghosts[i].itemBelow);
+    //char *maze=pGame->maze;
+    //char an[128]={0};
+    int ans;
+    unsigned char maze[100]={0};
+    /*
+    Ans ans ;
+    ans.len=0;
+    ans.anslist=an;*/
 
-      if (!isWall(pGame->grid[newpos.row][newpos.col])){gho->pos=newpos;}
-      
-      else {//同列异行触墙 随机运动
-        for(int i=0;i<4;i++){
-          if (i!=2){
-            newpos=moveOneStep(gho->pos,(Direction)(i));
-            if(!isWall(pGame->grid[newpos.row][newpos.col])){gho->pos=newpos;}
-          }
-        }}
-    }
-    if (isWall(pGame->grid[newpos.row][newpos.col]) && !(gho->pos.col==targetpos.col)){//异列触墙
-      if (gho->pos.row>targetpos.row)newpos=moveOneStep(gho->pos,(Direction)(0));//异行变行
-      else if (gho->pos.row<targetpos.row)newpos=moveOneStep(gho->pos,(Direction)(4));
-      if (!isWall(pGame->grid[newpos.row][newpos.col])){gho->pos=newpos;}//异列异行触墙
-    }
-    else if(!isWall(pGame->grid[newpos.row][newpos.col]) && !(gho->pos.col==targetpos.col)) {gho->pos=newpos;}
+    //maze[(pGame->pacmanPos.row)*(pGame->numCols)+pGame->pacmanPos.col]='E';
+    //maze[(pGame->ghosts[i].pos.row)*(pGame->numCols)+pGame->ghosts[i].pos.col]='S';
+    //walkMaze(pGame->numRows,pGame->numCols,maze,pGame->ghosts[i].pos.row,pGame->ghosts[i].pos.col,&ans);
+    walkMaze(pGame->numRows,pGame->numCols,maze,pGame->ghosts[i].pos.row,pGame->ghosts[i].pos.col,&ans);
 
-    if(pGame->grid[gho->pos.row][gho->pos.col]=='@'){
-      for(int j=0;j<pGame->ghostCnt;j++){
-        if (j!=i && pGame->ghosts[j].pos.col==pGame->ghosts[i].pos.col && pGame->ghosts[j].pos.row==pGame->ghosts[i].pos.row){
-            pGame->ghosts[i].itemBelow=pGame->ghosts[j].itemBelow;
-      }
-    }}
-    else{
-
-    gho->itemBelow=pGame->grid[gho->pos.row][gho->pos.col];}
-    move_cursor(gho->pos.row,gho->pos.col);
+    //moveOneStep(pGame->ghosts[i].pos,(Direction)(ans.anslist[ans.len]));
+    pGame->ghosts[i].pos=moveOneStep(pGame->ghosts[i].pos,(Direction)(ans));
+    
+    pGame->ghosts[i].itemBelow=pGame->grid[pGame->ghosts[i].pos.row][pGame->ghosts[i].pos.col];
+    move_cursor(pGame->ghosts[i].pos.row,pGame->ghosts[i].pos.col);
     printf("@");
-    pGame->grid[gho->pos.row][gho->pos.col]='@';
-}}
+
+
+  }
+}
 
 Direction getPacmanMovement(void) {
   if (kbhit()) {
@@ -248,19 +374,19 @@ Direction getPacmanMovement(void) {
   return Idle;
 }
 
-int getinput(int result,int level) {
-  if (kbhit()) {
-    switch (getch()) {
-    case 'q':return 1;
-    case 'n':if(result==1 && level!=3){return 2;}else{return 0;}
-    case 'r':return 3;
-    }
-  }
-  return 0;
-}
-
+/**
+ * @brief Move the Pacman by one step, following the user's control obtained by
+ * @c getPacmanMovement(). Pacman's position should be updated, and the contents
+ * in @c pGame->grid and things printed on the screen should also be updated. If
+ * the Pacman eats a food through this step, the related information stored and
+ * printed should also be updated.
+ *
+ * @param pGame Pointer to the current Game object.
+ */
 void movePacman(Game *pGame) {
-
+  // TODO: Implement this function.
+  // Note that Pacman may be moved to a position containing a food or a ghost.
+  // These cases should be handled carefully.
   Direction pacmanDirection;  
   pacmanDirection = getPacmanMovement();  
 
@@ -271,21 +397,29 @@ void movePacman(Game *pGame) {
   else{pGame->pacmanPos=newpos;
   if(isFood(pGame->grid[pGame->pacmanPos.row][pGame->pacmanPos.col])){
     pGame->grid[pGame->pacmanPos.row][pGame->pacmanPos.col]=' ';
-    pGame->foodsCnt--;pGame->score++;}
-  else if(isGhost(pGame->grid[pGame->pacmanPos.row][pGame->pacmanPos.col])){pGame->status=GS_Lose;}
+    pGame->foodsCnt--;}
+  //else if(isGhost(pGame->grid[pGame->pacmanPos.row][pGame->pacmanPos.col])){pGame->status=GS_Lose;}}
   }
   move_cursor(pGame->pacmanPos.row,pGame->pacmanPos.col);
-  printf(BRIGHT_YELLOW_TEXT("C"));
+  printf("C");
   if(pGame->foodsCnt==0){pGame->status=GS_Win;}
   
 }
 
-
+/**
+ * @brief Test if Pacman has died.
+ */
 bool pacmanDies(const Game *pGame) {
   return pGame->status==GS_Lose;
+  // TODO: Implement this function.
 }
 
-
+/**
+ * @brief Test if the game has ended. If so, update the @c status and return
+ * true; otherwise return false.
+ *
+ * @param pGame Pointer to the current Game object.
+ */
 bool gameEnds(Game *pGame) {
   
   if (pacmanDies(pGame)) {
@@ -323,47 +457,24 @@ void runGame(Game *pGame) {
   }
 }
 
-int runLevel(int level) {
-  char path[100];int result;
+void runLevel(int level) {
+  char path[100];
   sprintf(path, "maps/level%d.txt", level);
   Game game = createGame(level, path);
   runGame(&game);
   assert(game.status == GS_Lose || game.status == GS_Win);
   move_cursor(game.numRows + 4, 0);
-  if (game.status == GS_Lose){
+  if (game.status == GS_Lose)
     printf("Pacman dies!");
-    move_cursor(game.numRows + 5, 0);
-    printf("Press q to quit, Press r to restart");
-    result= 2;}
-  else{
+  else
     printf("You win!");
-    move_cursor(game.numRows + 5, 0);
-    if(level==3){printf("Press q to quit, Press r to try again ,Its end of the game");}
-    else{printf("Press q to quit, Press r to try again, Press n to play next level");}
-    result= 1;}
-  while(getinput(result,level)==0){;}
-    destroyGame(&game);
-    if (getinput(result,level)==1){exit(0);return 1;}
-    else if(getinput(result,level)==2){return 2;}
-    else if (getinput(result,level)==3){return 3;}
-    }
-
+  printf("                                       \n");
+  destroyGame(&game);
+}
 
 int main(void) {
   prepare_game();
-  int level=0,result=0,done=0;
-  while(1){
-    result=runLevel(level);
-    if (result==1){break;}
-    else if(result==2){level++;}
-    else if (result==3);
-    }
-
+  // TODO: Run more levels?
+  runLevel(0);
   return 0;
 }
-/*move_cursor(game.numRows + 5, 0);
-    printf("Press q to quit, Press r to restart");}
-    
-        move_cursor(game.numRows + 5, 0);
-    if(level==3){printf("Press q to quit, Press r to try again ,Its end of the game");}
-    else{printf("Press q to quit, Press r to try again, Press n to play next level");}}*/
