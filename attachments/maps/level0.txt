@@ -7,4 +7,4 @@ B..BBBBBBBBB.BBBBBBBBB..B
 BC.....................1B
 BBBBBBBBBBBBBBBBBBBBBBBBB
 right
-down
+left
