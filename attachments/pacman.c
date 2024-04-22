@@ -204,7 +204,7 @@ void printInitialGame(const Game *pGame)
 void printScoreUpdate(const Game *pGame)
 {
   move_cursor(pGame->numRows + 2, 7);
-  printf("%d          ", pGame->score);
+  printf("%d   ", pGame->score);
 }
 
 void printFoodUpdate(const Game *pGame)
@@ -216,7 +216,8 @@ void printFoodUpdate(const Game *pGame)
 void moveGhosts(Game *pGame)
 {
   for (int i = 0; i < pGame->ghostCnt; i++)
-  { // renew all
+  {
+    // ghost重叠方案：每次更新时全部清除，如果重合，后来者取前者itembelow而不是@
     pGame->grid[pGame->ghosts[i].pos.row][pGame->ghosts[i].pos.col] = pGame->ghosts[i].itemBelow;
     move_cursor(pGame->ghosts[i].pos.row, pGame->ghosts[i].pos.col);
     putchar(pGame->ghosts[i].itemBelow);
@@ -224,6 +225,7 @@ void moveGhosts(Game *pGame)
 
   for (int i = 0; i < pGame->ghostCnt; i++)
   {
+    // ghost移动代码
     Ghost *gho = &pGame->ghosts[i];
     Coord targetpos = pGame->pacmanPos;
     Coord newpos;
@@ -306,25 +308,25 @@ Direction getPacmanMovement(int row)
   {
     switch (getch())
     {
+      // 将当前移动方向展示在屏幕上
     case 'w':
       move_cursor(row, 40);
-      printf("w");
+      printf("Up   ");
       return Up;
     case 's':
       move_cursor(row, 40);
-      printf("s");
+      printf("Down ");
       return Down;
     case 'a':
       move_cursor(row, 40);
-      printf("a");
+      printf("Left ");
       return Left;
     case 'd':
       move_cursor(row, 40);
-      printf("d");
+      printf("Right");
       return Right;
     }
   }
-  // Note that 'Idle' is also returned when no keyboard hit occurs.
   return Idle;
 }
 
@@ -347,11 +349,11 @@ void movePacman(Game *pGame)
   {
     pGame->pacmanPos = newpos;
     int emergency = 0;
-    for (int i = 0; i < pGame->ghostCnt; i++)
+    for (int i = 0; i < pGame->ghostCnt; i++) // 调查emergency
     {
-      if (abs((pGame->pacmanPos.row) - (pGame->ghosts[i].pos.row)) <= 4 && abs((pGame->pacmanPos.col) - (pGame->ghosts[i].pos.col)) <= 4)
+      if (abs((pGame->pacmanPos.row) - (pGame->ghosts[i].pos.row)) + abs((pGame->pacmanPos.col) - (pGame->ghosts[i].pos.col)) <= 4)
       {
-        emergency = 2;
+        emergency = 2; // 任意一个ghost的emergency是2就立刻退出返回warning
         break;
       }
       else if (abs((pGame->pacmanPos.row) - (pGame->ghosts[i].pos.row)) +
@@ -372,6 +374,7 @@ void movePacman(Game *pGame)
         }
       }
     }
+
     if (emergency == 2)
     {
       move_cursor(pGame->numRows + 2, 12);
@@ -430,28 +433,21 @@ bool gameEnds(Game *pGame)
 
 int getinput(int result, int level)
 {
+  char c;
   while (1)
   {
     if (kbhit())
     {
-      switch (getch())
-      {
-      case 'q':
+      c = getch();
+      if (c == 'q')
         return 1;
-      case 'n':
-        if (result == 1 && level != 3)
-        {
-          return 2;
-        }
-        else
-        {
-          return 0;
-        }
-      case 'r':
+      if (c == 'n' && result == 1 && level != 3)
+        return 2;
+      if (c == 'r')
         return 3;
-      }
     }
   }
+
   return 0;
 }
 void runGame(Game *pGame)
@@ -490,14 +486,14 @@ int runLevel(int level)
   move_cursor(game.numRows + 4, 0);
   if (game.status == GS_Lose)
   {
-    printf("Pacman dies!");
+    printf(RED_TEXT("Pacman dies!                                      "));
     move_cursor(game.numRows + 5, 0);
     printf("Press q to quit, Press r to restart");
     result = 2;
   }
   else
   {
-    printf("You win!");
+    printf(RED_TEXT("You win!                                          "));
     move_cursor(game.numRows + 5, 0);
     if (level == 3)
     {
